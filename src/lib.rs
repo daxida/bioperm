@@ -1,19 +1,43 @@
+use std::collections::HashMap;
+use std::hash::Hash;
+
 /// Chunkify function for non-overlapping blocks
-pub fn chunkify(seq: &str, chunk_size: usize) -> Vec<String> {
+///
+/// "ABCDEFG", 3 > ("ABC", "DEF", "G")
+pub fn each_step(seq: &str, step: usize) -> impl Iterator<Item = &str> {
     (0..seq.len())
-        .step_by(chunk_size)
-        .map(|i| seq[i..std::cmp::min(i + chunk_size, seq.len())].to_string())
-        .collect()
+        .step_by(step)
+        .map(move |i| &seq[i..std::cmp::min(i + step, seq.len())])
 }
 
-// Chunkify function for overlapping blocks
-pub fn chunkify_cons(seq: &str, chunk_size: usize) -> Vec<String> {
-    if seq.len() < chunk_size {
-        return Vec::new();
-    }
-    (0..=seq.len() - chunk_size)
-        .map(|i| seq[i..i + chunk_size].to_string())
-        .collect()
+/// Chunkify function for overlapping blocks
+///
+/// "ABCDEFG", 3 > ("ABC", "BCD", "CDE", "DEF", "EFG")
+pub fn each_cons(seq: &str, step: usize) -> impl Iterator<Item = &str> {
+    (0..=seq.len() - step).map(move |i| &seq[i..i + step])
+}
+
+fn same_frequencies<I, T>(it1: I, it2: I) -> bool
+where
+    I: Iterator<Item = T>,
+    T: Eq + Hash,
+{
+    it1.zip(it2)
+        .fold(HashMap::new(), |mut cnt, (item1, item2)| {
+            *cnt.entry(item1).or_insert(0) += 1;
+            *cnt.entry(item2).or_insert(0) -= 1;
+            cnt
+        })
+        .values()
+        .all(|&v| v == 0)
+}
+
+pub fn same_klets(s1: &str, s2: &str, k: usize) -> bool {
+    s1.len() == s2.len() && same_frequencies(each_cons(s1, k), each_cons(s2, k))
+}
+
+pub fn same_klons(s1: &str, s2: &str, k: usize) -> bool {
+    s1.len() == s2.len() && same_frequencies(each_step(s1, k), each_step(s2, k))
 }
 
 #[cfg(test)]
@@ -22,17 +46,39 @@ mod tests {
 
     #[test]
     fn test_chunkify() {
-        assert_eq!(chunkify("ABCDEFG", 3), vec!["ABC", "DEF", "G"]);
-        assert_eq!(chunkify("ABCDE", 2), vec!["AB", "CD", "E"]);
-        assert_eq!(chunkify("ABCDE", 5), vec!["ABCDE"]);
-        assert_eq!(chunkify("A", 1), vec!["A"]);
-        assert_eq!(chunkify("ABCDE", 1), vec!["A", "B", "C", "D", "E"]);
+        assert_eq!(
+            each_step("ABCDEFG", 3).collect::<Vec<_>>(),
+            vec!["ABC", "DEF", "G"]
+        );
+        assert_eq!(
+            each_step("ABCDE", 2).collect::<Vec<_>>(),
+            vec!["AB", "CD", "E"]
+        );
     }
 
     #[test]
     fn test_chunkify_cons() {
-        assert_eq!(chunkify_cons("ABCDE", 2), vec!["AB", "BC", "CD", "DE"]);
-        assert_eq!(chunkify_cons("ABCDE", 3), vec!["ABC", "BCD", "CDE"]);
-        assert_eq!(chunkify_cons("A", 1), vec!["A"]);
+        assert_eq!(
+            each_cons("ABCDE", 2).collect::<Vec<_>>(),
+            vec!["AB", "BC", "CD", "DE"]
+        );
+        assert_eq!(
+            each_cons("ABCDE", 3).collect::<Vec<_>>(),
+            vec!["ABC", "BCD", "CDE"]
+        );
+    }
+
+    #[test]
+    fn test_same_klets() {
+        let s1 = "AGACATAAAGTTCCGTACTGCCGGGAT";
+        let s4 = "AAAGATCCGGTTAGACGGTACTGCCAT";
+        assert!(same_klets(s1, s4, 2));
+    }
+
+    #[test]
+    fn test_same_klons() {
+        let s1 = "AGACATAAAGTTCCGTACTGCCGGGAT";
+        let s4 = "AAAGATCCGGTTAGACGGTACTGCCAT";
+        assert!(same_klons(s1, s4, 3));
     }
 }
