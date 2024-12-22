@@ -1,10 +1,5 @@
 """Explore permutations.
 
-We shall use the term singlet rather than mononucleotide, doublet in place of
-dinucleotide, and triplet instead of trinucleotide. Rather than speak of codons, we
-define a triplon as being a member of a set of consecutive nonoverlapping triplets.
-These terms are illustrated in figure 1.
-
 References:
 
 Significance of nucleotide sequence alignments...
@@ -54,10 +49,9 @@ def edge_ordering(seq: str, k: int) -> dict[str, list[str]]:
 
 
 def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False) -> str:
-    # NOTE: k may interfere with keys in dict
     assert k < len(seq)
 
-    # 1. Construct the doublet graph G and edge ordering E(S)
+    # 1. Construct the klet graph G and edge ordering E(S)
     eord = edge_ordering(seq, k)
     s1 = seq[: k - 1]
     sf = seq[-(k - 1) :]
@@ -68,7 +62,10 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
         pprint(eord)
         print(f"{s1=}, {sf=}")
 
-    # 2. 3. 4.
+    # 2. For each vertex in G \ s_f, randomly select last edges
+    # 3. From the set of last edges, construct z_graph
+    #    and assess if connected to s_f
+    # 4. If it is not connected, goto (2.)
     last_edges = []
     vertices = list(eord.keys())
     seen = set()
@@ -106,14 +103,16 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
         print("5.", SEP)
         print(f"{last_edges=}")
 
-    # Put them at the end
+    # Put last edges at the end
     for last_edge in last_edges:
         vertex = last_edge[: k - 1]
         last_edge_idx = eord[vertex].index(last_edge)
         eord[vertex].pop(last_edge_idx)
         eord[vertex].append(last_edge)
 
-    # 5.
+    # 5. Randomly permute:
+    #    - every edge for s_f
+    #    - every edge but the last edge chose for G \ s_f
     def permute_except_last(lst: list[str]) -> list[str]:
         to_permute = lst[:-1]
         random.shuffle(to_permute)
@@ -128,11 +127,7 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
             perm_edges = permute_except_last(edges)
             eord_perm[vertex] = perm_edges
 
-    if debug:
-        print(SEP)
-        pprint(eord_perm)
-
-    # 6.
+    # 6. Construct the sequence from the permuted edge ordering
     new_seq = s1
     cur_vertex = s1
     if debug:
@@ -150,9 +145,9 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
         if debug:
             print(cur_edge, cur_vertex, new_seq)
 
-    for k, v in eord_perm.items():
-        if v:
-            msg = f"{k} edge list was not exhausted\n{seq=}\n{last_edges=}"
+    for key, value in eord_perm.items():
+        if value:
+            msg = f"{key} edge list was not exhausted\n{seq=}\n{last_edges=}"
             raise RuntimeError(msg)
     if len(seq) != len(new_seq):
         msg = f"Expected new_seq to be of len {len(seq)} but was {len(new_seq)}"
@@ -173,23 +168,6 @@ def doublet_and_triplet_preserving_permutation(seq: str) -> str:
         raise RuntimeError(msg)
     if not is_klet_preserved(seq, new_seq, 3):
         msg = "Triplets are not preserved"
-        raise RuntimeError(msg)
-
-    return new_seq
-
-
-# NUB
-def victor(seq: str) -> str:
-    new_seq = doublet_preserving_permutation(seq, k=4)
-
-    if not is_klet_preserved(seq, new_seq, 2):
-        msg = "Doublets are not preserved"
-        raise RuntimeError(msg)
-    if not is_klet_preserved(seq, new_seq, 3):
-        msg = "Triplets are not preserved"
-        raise RuntimeError(msg)
-    if not is_klet_preserved(seq, new_seq, 4):
-        msg = "Quadruplets are not preserved"
         raise RuntimeError(msg)
 
     return new_seq
@@ -284,7 +262,5 @@ if __name__ == "__main__":
     # print(perm, "DTP")
     perm = doublet_and_triplon_preserving_permutation(S1)
     print(perm, "DtP")
-    perm = victor(S1)
-    # print(perm, "NUB")
 
     print("Ok")
