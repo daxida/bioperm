@@ -138,7 +138,7 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
             cur_edge = eord_perm[cur_vertex].pop(0)
         except IndexError:
             assert cur_vertex == sf
-            # print(f"Exiting permutation gracefully: {cur_vertex} was not in edge ordering")
+            # print(f"Exiting gracefully: {cur_vertex} was not in edge ordering")
             break
         cur_vertex = cur_edge[1:]
         new_seq += cur_edge[-1]
