@@ -1,4 +1,4 @@
-"""Euler swaps.
+"""Swap and euler algorithms.
 
 Shuffling biological sequences
 - https://www.sciencedirect.com/science/article/pii/S0166218X97814564
@@ -41,7 +41,61 @@ def random_rotation(seq: str, k: int, *, m: int | None = None) -> str:
     return rotated
 
 
-def euler_swap(seq: str, k: int) -> str:
+def markov_transition(seq: str, k: int) -> str | None:
+    """Return the swapped sequence if the checks are verified, or else None."""
+    n = len(seq)
+    positions = random.sample(range(0, n - k + 2), 4)
+    positions.sort()  # Ensure a < b < c < d
+    a, b, c, d = positions
+
+    ss1 = seq[a : a + k - 1]
+    ss2 = seq[b : b + k - 1]
+    ss3 = seq[c : c + k - 1]
+    ss4 = seq[d : d + k - 1]
+    assert len(ss1) == k - 1
+
+    if ss1 == ss3 and ss2 == ss4:
+        # print(a, b, c, d)
+        return (
+            seq[:a]
+            + seq[c : d + k - 1]
+            + seq[b + k - 1 : c]
+            + seq[a : b + k - 1]
+            + seq[d + k - 1 :]
+        )
+    else:
+        return None
+
+
+def swap_algorithm(seq: str, k: int) -> str:
+    """Section 3."""
+    assert k < len(seq)
+    if is_k_cyclic(seq, k):
+        raise NotImplementedError
+
+    new_seq = None
+    max_iterations = 100
+    for _ in range(max_iterations):
+        new_seq = markov_transition(seq, k)
+        if new_seq is not None:
+            break
+    # Max iterations reached
+    if new_seq is None:
+        raise RuntimeError
+
+    assert len(new_seq) == len(seq)
+    assert same_klets(seq, new_seq, k)
+    print(new_seq)
+
+    return seq
+
+
+def euler_algorithm(seq: str, k: int) -> str:
+    """Euler algorithm for generating a uniform random permutation of seq.
+
+    1. Construct the digraph D_k(seq) from klet counts.
+    2. If seq is cyclic...
+    """
     assert k < len(seq)
 
     # 1. Construct D_k
@@ -100,8 +154,9 @@ def euler_swap(seq: str, k: int) -> str:
 
 
 def main():
-    S1 = "ACGTAG"
-    euler_swap(S1, 3)
+    S1 = "ATCAGCAAC"
+    print(S1)
+    swap_algorithm(S1, 2)
 
 
 if __name__ == "__main__":
