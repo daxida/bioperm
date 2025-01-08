@@ -6,8 +6,8 @@ Shuffling biological sequences
 
 # from constants import S1
 import random
-from utils import is_klet_preserved
-from main import edge_ordering
+from utils import same_klets
+from altschul import edge_ordering
 from pprint import pprint
 
 
@@ -16,32 +16,19 @@ def is_k_cyclic(seq: str, k: int) -> bool:
     return seq[: (k - 1)] == seq[-(k - 1) :]
 
 
-def random_rotation(seq: str, k: int) -> str:
+def random_rotation(seq: str, k: int, *, m: int | None = None) -> str:
     """Preserves k-lets.
 
     Note that this is not a proper rotation. It does not
     conserve the characters of the sequence.
+
+    m can be passed as an int for testing.
     """
     assert is_k_cyclic(seq, k)
 
     n = len(seq)
-    m = random.randint(k, n)  # includes n
-
-    # print(m, seq[m - 1 :], seq[k - 1 : m], seq[m : m + k])
-    rotated = seq[m - 1 :] + seq[k - 1 : m]
-    for i in range(m + 1, m + k - 1):
-        idx = i if i <= n else i % n + k - 1
-        rotated += seq[idx - 1]
-
-    assert is_klet_preserved(seq, rotated, k)
-
-    return rotated
-
-
-def random_rotation_m(seq: str, k: int, m: int) -> str:
-    """Testing."""
-    assert is_k_cyclic(seq, k)
-    n = len(seq)
+    if m is None:
+        m = random.randint(k, n)
     assert k <= m <= n
 
     rotated = seq[m - 1 :] + seq[k - 1 : m]
@@ -49,7 +36,7 @@ def random_rotation_m(seq: str, k: int, m: int) -> str:
         idx = i if i <= n else i % n + k - 1
         rotated += seq[idx - 1]
 
-    assert is_klet_preserved(seq, rotated, k)
+    assert same_klets(seq, rotated, k)
 
     return rotated
 
@@ -107,7 +94,7 @@ def euler_swap(seq: str, k: int) -> str:
         # print(cur_edge, cur_vertex, new_seq)
 
     print(f"{new_seq=}")
-    assert is_klet_preserved(seq, new_seq, k)
+    assert same_klets(seq, new_seq, k)
 
     return new_seq
 

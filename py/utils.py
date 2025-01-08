@@ -63,9 +63,11 @@ def chunkify_cons(seq: str, chunk_size: int) -> list[str]:
     return [seq[fr : fr + chunk_size] for fr in range(len(seq) - chunk_size + 1)]
 
 
-def is_klet_preserved(s1, s2, k):
+def same_klets(s1, s2, k):
+    """True iif s1 and s2 have same klets."""
     return Counter(chunkify_cons(s1, k)) == Counter(chunkify_cons(s2, k))
 
 
-def is_klon_preserved(s1, s2, k):
+def same_klons(s1, s2, k):
+    """True iif s1 and s2 have same klons."""
     return Counter(chunkify(s1, k)) == Counter(chunkify(s2, k))

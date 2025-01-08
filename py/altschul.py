@@ -15,7 +15,7 @@ from collections import defaultdict
 from pprint import pprint
 
 from constants import S1
-from utils import UnionFind, chunkify_cons, is_klet_preserved, is_klon_preserved
+from utils import UnionFind, chunkify_cons, same_klets, same_klons
 
 SEP = "==" * 20
 
@@ -152,7 +152,7 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
     if len(seq) != len(new_seq):
         msg = f"Expected new_seq to be of len {len(seq)} but was {len(new_seq)}"
         raise RuntimeError(msg)
-    if not is_klet_preserved(seq, new_seq, 2):
+    if not same_klets(seq, new_seq, 2):
         msg = "Doublets are not preserved"
         raise RuntimeError(msg)
 
@@ -163,10 +163,10 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
 def doublet_and_triplet_preserving_permutation(seq: str) -> str:
     new_seq = doublet_preserving_permutation(seq, k=3)
 
-    if not is_klet_preserved(seq, new_seq, 2):
+    if not same_klets(seq, new_seq, 2):
         msg = "Doublets are not preserved"
         raise RuntimeError(msg)
-    if not is_klet_preserved(seq, new_seq, 3):
+    if not same_klets(seq, new_seq, 3):
         msg = "Triplets are not preserved"
         raise RuntimeError(msg)
 
@@ -236,10 +236,10 @@ def doublet_and_triplon_preserving_permutation(seq: str, *, debug: bool = True) 
     if len(seq) != len(new_seq):
         msg = f"Expected new_seq to be of len {len(seq)} but was {len(new_seq)}"
         raise RuntimeError(msg)
-    if not is_klet_preserved(seq, new_seq, 2):
+    if not same_klets(seq, new_seq, 2):
         msg = "Doublets are not preserved"
         raise RuntimeError(msg)
-    if not is_klon_preserved(seq, new_seq, 3):
+    if not same_klons(seq, new_seq, 3):
         msg = "Triplon are not preserved"
         raise RuntimeError(msg)
     # if not is_klet_preserved(seq, new_seq, 3):
