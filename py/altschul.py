@@ -48,7 +48,8 @@ def edge_ordering(seq: str, k: int) -> dict[str, list[str]]:
     return eord
 
 
-def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False) -> str:
+def klet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False) -> str:
+    """Preserves all j-lets for 1 <= j <= k"""
     assert k < len(seq)
 
     # 1. Construct the klet graph G and edge ordering E(S)
@@ -159,20 +160,6 @@ def doublet_preserving_permutation(seq: str, k: int = 2, *, debug: bool = False)
     return new_seq
 
 
-# DTP
-def doublet_and_triplet_preserving_permutation(seq: str) -> str:
-    new_seq = doublet_preserving_permutation(seq, k=3)
-
-    if not same_klets(seq, new_seq, 2):
-        msg = "Doublets are not preserved"
-        raise RuntimeError(msg)
-    if not same_klets(seq, new_seq, 3):
-        msg = "Triplets are not preserved"
-        raise RuntimeError(msg)
-
-    return new_seq
-
-
 # DtP
 def doublet_and_triplon_preserving_permutation(seq: str, *, debug: bool = True) -> str:
     if len(seq) % 3:
@@ -201,7 +188,7 @@ def doublet_and_triplon_preserving_permutation(seq: str, *, debug: bool = True) 
     r = "".join(s_star[i] + s_star[i + 2] for i in range(0, len(s_star), 3))
 
     # 5. permute r
-    r_perm = doublet_preserving_permutation(r)
+    r_perm = klet_preserving_permutation(r)
     if debug:
         print(f"r ={r}")
         print(f"r'={r_perm}")
@@ -256,10 +243,8 @@ if __name__ == "__main__":
     # S1 = record.seq
 
     # print(S1)
-    perm = doublet_preserving_permutation(S1)
+    perm = klet_preserving_permutation(S1)
     # print(perm, "DP")
-    perm = doublet_and_triplet_preserving_permutation(S1)
-    # print(perm, "DTP")
     perm = doublet_and_triplon_preserving_permutation(S1)
     print(perm, "DtP")
 

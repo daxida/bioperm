@@ -1,6 +1,6 @@
 from collections import Counter
 
-from altschul import doublet_preserving_permutation, edge_ordering
+from altschul import klet_preserving_permutation, edge_ordering
 from constants import S1, S2, S3, S4
 from utils import same_klets, same_klons
 
@@ -13,6 +13,16 @@ def test_altschul_sequences():
 
 def test_edge_ordering():
     assert len(edge_ordering(S1, 3)) == 16
+
+
+def test_klet_preservation():
+    seq = "AGTACTAT" * 2
+    seq_2 = klet_preserving_permutation(seq, 2)
+    assert same_klets(seq, seq_2, 2)
+
+    seq_3 = klet_preserving_permutation(seq, 3)
+    assert same_klets(seq, seq_3, 2)
+    assert same_klets(seq, seq_3, 3)
 
 
 def brute_force_possible_permutations(seq: str, k: int):
@@ -64,7 +74,7 @@ def _test_altschul_klet_uniform(seq: str, all_perms: set[str], k: int):
     cnt = Counter()
     max_iterations = 5000
     for _ in range(max_iterations):
-        res = doublet_preserving_permutation(seq, k)
+        res = klet_preserving_permutation(seq, k)
         cnt[res] += 1
         assert same_klets(seq, res, 1)
         assert same_klets(seq, res, k)
