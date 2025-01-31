@@ -37,7 +37,7 @@ def brute_force_possible_permutations(seq: str, k: int):
     print(all_doublet_perserving_permutations)
 
 
-def test_altschul_klet_uniform():
+def test_klet_uniform():
     """Test that all of possible k-let preserving permutations are found."""
     seq = "ACTAGTAT"
 
@@ -51,7 +51,7 @@ def test_altschul_klet_uniform():
         "AGTATACT",
         "ACTATAGT",
     }
-    _test_altschul_klet_uniform(seq, all_perms, 2)
+    _test_klet_uniform(seq, all_perms, 2)
 
     seq = "AAATAAA"
     all_perms = {
@@ -59,7 +59,7 @@ def test_altschul_klet_uniform():
         "AATAAAA",
         "AAATAAA",
     }
-    _test_altschul_klet_uniform(seq, all_perms, 3)
+    _test_klet_uniform(seq, all_perms, 3)
 
     seq = "AAAATAAAA"
     all_perms = {
@@ -67,10 +67,10 @@ def test_altschul_klet_uniform():
         "AAATAAAAA",
         "AAAATAAAA",
     }
-    _test_altschul_klet_uniform(seq, all_perms, 4)
+    _test_klet_uniform(seq, all_perms, 4)
 
 
-def _test_altschul_klet_uniform(seq: str, all_perms: set[str], k: int):
+def _test_klet_uniform(seq: str, all_perms: set[str], k: int):
     cnt = Counter()
     max_iterations = 5000
     for _ in range(max_iterations):

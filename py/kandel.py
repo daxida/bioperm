@@ -36,6 +36,7 @@ def random_rotation(seq: str, k: int, *, m: int | None = None) -> str:
         idx = i if i <= n else i % n + k - 1
         rotated += seq[idx - 1]
 
+    assert len(seq) == len(rotated)
     assert same_klets(seq, rotated, k)
 
     return rotated
@@ -44,7 +45,8 @@ def random_rotation(seq: str, k: int, *, m: int | None = None) -> str:
 def markov_transition(seq: str, k: int) -> str | None:
     """Return the swapped sequence if the checks are verified, or else None."""
     n = len(seq)
-    positions = random.sample(range(0, n - k + 2), 4)
+    positions = random.sample(range(0, n - k + 3), 4)
+    assert all(0 <= x <= n - k + 2 for x in positions)
     positions.sort()  # Ensure a < b < c < d
     a, b, c, d = positions
 
@@ -56,13 +58,29 @@ def markov_transition(seq: str, k: int) -> str | None:
 
     if ss1 == ss3 and ss2 == ss4:
         # print(a, b, c, d)
-        return (
+        overlap = b + k - 1 >= c
+        res = (
             seq[:a]
-            + seq[c : d + k - 1]
+            + seq[c : d + k - 1]  # swapped
             + seq[b + k - 1 : c]
-            + seq[a : b + k - 1]
+            # + seq[a : min(c, b + k - 1)]  # swapped
+            + seq[a : b + k - 1]  # swapped
             + seq[d + k - 1 :]
         )
+        # TODO: finish the overlap case (seq AAATAAA).
+        diagnostic = (
+            f"{seq=} {len(seq)=} != {len(res)=} {res=}\n"
+            f"{overlap=} {b + k - 1} >= {c}\n"
+            f"{a} {b} {c} {d}\n"
+            f"[EXPECTED] Swapping {seq[a : b + k - 1]} with {seq[c : d + k - 1]}\n"
+            # Our implementation
+            f"{ss1} [{a}..{a + k - 1}] == {ss3} [{c}..{c + k - 1}]\n"
+            f"{ss2} [{b}..{b + k - 1}] == {ss4} [{d}..{d + k - 1}]\n"
+            # They mention this invariant in the article
+            f"{seq[c : b + k - 1]} [{c}..{b + k - 1}]"
+        )
+        assert len(seq) == len(res), diagnostic
+        return res
     else:
         return None
 
@@ -70,24 +88,31 @@ def markov_transition(seq: str, k: int) -> str | None:
 def swap_algorithm(seq: str, k: int) -> str:
     """Section 3."""
     assert k < len(seq)
-    if is_k_cyclic(seq, k):
-        raise NotImplementedError
+    was_cyclic = is_k_cyclic(seq, k)
+    if was_cyclic:
+        seq = random_rotation(seq, k)
+        # raise NotImplementedError(f"{k}-cyclic {seq=}")
 
     new_seq = None
-    max_iterations = 100
+    max_iterations = 5000
     for _ in range(max_iterations):
         new_seq = markov_transition(seq, k)
         if new_seq is not None:
             break
     # Max iterations reached
     if new_seq is None:
-        raise RuntimeError
+        # Cf. AATAA -> rotated to -> TAAAT (with no possible transition)
+        return seq
+        # raise RuntimeError(f"{max_iterations=} reached in swap_algorithm for {seq=}")
 
-    assert len(new_seq) == len(seq)
+    if was_cyclic:
+        assert is_k_cyclic(seq, k)
+    assert len(new_seq) == len(seq), (
+        f"{seq=} length != {new_seq=} length: {len(seq)} != {len(new_seq)}"
+    )
     assert same_klets(seq, new_seq, k)
-    print(new_seq)
 
-    return seq
+    return new_seq
 
 
 def euler_algorithm(seq: str, k: int) -> str:
@@ -155,8 +180,10 @@ def euler_algorithm(seq: str, k: int) -> str:
 
 def main():
     S1 = "ATCAGCAAC"
+    S1 = "AAATAAA"
     print(S1)
-    swap_algorithm(S1, 2)
+    new_seq = swap_algorithm(S1, 2)
+    print(new_seq)
 
 
 if __name__ == "__main__":
