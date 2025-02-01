@@ -41,6 +41,7 @@ fn edge_ordering(seq: &str, k: usize) -> HashMap<&str, Vec<&str>> {
 }
 
 pub fn klet_preserving_permutation(seq: &str, k: usize, debug: bool) -> String {
+    assert!(1 < k);
     assert!(k < seq.len());
 
     let mut eord = edge_ordering(seq, k);
@@ -56,7 +57,7 @@ pub fn klet_preserving_permutation(seq: &str, k: usize, debug: bool) -> String {
     let mut last_edges: Vec<&str> = Vec::new();
     let vertices: Vec<&str> = eord.keys().cloned().collect();
     let mut seen = HashSet::new();
-    let mut max_iterations = 100;
+    let mut max_iterations = 1000;
 
     while max_iterations > 0 {
         last_edges.clear();
