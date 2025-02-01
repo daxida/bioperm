@@ -1,5 +1,6 @@
 //! https://www.sciencedirect.com/science/article/pii/S0166218X97814564
 
+#[allow(dead_code)]
 fn kandel(seq: &str) -> &str {
     // Implement the exact algorithm p.181
     seq

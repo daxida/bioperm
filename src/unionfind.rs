@@ -1,45 +1,41 @@
 pub struct UnionFind {
-    n: i32,
     parents: Vec<i32>,
     group: usize,
 }
 
 impl UnionFind {
-    fn new(n: i32) -> UnionFind {
+    pub fn new(n: usize) -> UnionFind {
         UnionFind {
-            n: n,
-            parents: vec![-1; n as usize],
-            group: n as usize,
+            parents: vec![-1; n],
+            group: n,
         }
     }
 
-    fn find(&mut self, x: i32) -> i32 {
-        if self.parents[x as usize] < 0 {
-            return x;
+    pub fn find(&mut self, x: usize) -> i32 {
+        if self.parents[x] < 0 {
+            x as i32
         } else {
-            self.parents[x as usize] = self.find(self.parents[x as usize]);
-            return self.parents[x as usize];
+            self.parents[x] = self.find(self.parents[x] as usize);
+            self.parents[x]
         }
     }
 
-    fn union(&mut self, x: i32, y: i32) {
+    pub fn union(&mut self, x: usize, y: usize) {
         let mut new_x = self.find(x);
         let mut new_y = self.find(y);
 
         if new_x != new_y {
             self.group -= 1;
             if self.parents[new_x as usize] > self.parents[new_y as usize] {
-                let tmp: i32 = new_y;
-                new_y = new_x;
-                new_x = tmp;
+                std::mem::swap(&mut new_y, &mut new_x);
             }
             self.parents[new_x as usize] += self.parents[new_y as usize];
             self.parents[new_y as usize] = new_x;
         }
     }
 
-    fn group_count(&self) -> usize {
-        return self.group;
+    pub fn group_count(&self) -> usize {
+        self.group
     }
 }
 
