@@ -1,6 +1,6 @@
 from collections import Counter
 
-from altschul import klet_preserving_permutation, edge_ordering
+from altschul import check_if_connected, klet_preserving_permutation, edge_ordering
 from constants import S1, S2, S3, S4
 from utils import same_klets, same_klons
 
@@ -13,6 +13,12 @@ def test_altschul_sequences():
 
 def test_edge_ordering():
     assert len(edge_ordering(S1, 3)) == 16
+
+
+def test_check_if_connected():
+    z_graph = ["AT", "CT", "GA"]
+    vertices = ["A", "C", "G", "T"]
+    assert check_if_connected(z_graph, vertices)
 
 
 def test_klet_preservation():
