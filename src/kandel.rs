@@ -186,4 +186,47 @@ mod tests {
         let expected = ["ACGTAC", "CGTACG", "GTACGT", "TACGTA"];
         test_random_rotation(seq, k, &expected);
     }
+    #[test]
+    fn test_random_rotation_different_k() {
+        let seq = "ACGTACG";
+        let k = 4;
+        for i in k..seq.len() { 
+            let rotated = 
+            assert_eq!(is_k_cyclic(rotated, k));
+            assert_eq!(same_klets(seq, rotated, k));
+        }
+        //let expected = ["ATAAA", "TAAAT", "AAATA", "AATAA"];
+        //test_random_rotation(seq, k, &expected);
+    }
+    #[test]
+    fn test_klet_uniform() {        
+        let seq = "ACTAGTAT";
+        let k = 2;
+        let expected = ["AGTACTAT","ACTAGTAT","ATAGTACT","ATACTAGT","AGTATACT","ACTATAGT"];
+        _test_klet_uniform(seq, all_perms, k);
+
+    }
+    #[test]
+    fn _test_klet_uniform(seq: &str, all_perms: &std::collections::HashSet<String>, k: usize) {
+        let mut cnt: HashMap<String, usize> = HashMap::new();
+        let max_iterations = 1000;
+        
+        for _ in 0..max_iterations {
+            let res = swap_algorithm(seq, k);
+            *cnt.entry(res.clone()).or_insert(0) += 1;
+            
+            if !is_k_cyclic(seq, k) {
+                assert!(same_klets(seq, &res, 1));
+            }
+            assert!(same_klets(seq, &res, k));
+        }
+        
+        for (perm, &amount) in &cnt {
+            assert!(all_perms.contains(perm), "Unexpected permutation: {}", perm);
+            assert!((amount as f64 / max_iterations as f64 - 1.0 / all_perms.len() as f64).abs() < 0.05);
+        }
+        
+        let remaining: std::collections::HashSet<_> = cnt.keys().cloned().collect();
+        assert!(remaining.is_subset(all_perms));
+    }
 }
