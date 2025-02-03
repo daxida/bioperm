@@ -1,6 +1,6 @@
 //! https://www.sciencedirect.com/science/article/pii/S0166218X97814564
 use crate::utils::same_klets;
-use rand::Rng;
+use rand::{seq::SliceRandom, Rng};
 
 fn is_k_cyclic(seq: &str, k: usize) -> bool {
     let prefix = &seq[..k - 1];
@@ -29,6 +29,110 @@ fn random_rotation(seq: &str, k: usize, m: Option<usize>) -> String {
 
     rotated
 }
+
+fn markov_transition(seq: &str, k: usize) -> Option<String> {
+    use rand::thread_rng;
+    let n = seq.len();
+    if n < k {
+        return None;
+    }
+    let mut rng = thread_rng();
+    let mut positions: Vec<usize> = (0..n - k + 3).collect();
+    positions.shuffle(&mut rng);
+    positions.truncate(4);
+    positions.sort();
+    
+    let (a, b, c, d) = (positions[0], positions[1], positions[2], positions[3]);
+    
+    let ss1 = &seq[a..a + k - 1];
+    let ss2 = &seq[b..b + k - 1];
+    let ss3 = &seq[c..c + k - 1];
+    let ss4 = &seq[d..d + k - 1];
+    assert_eq!(ss1.len() == (k-1));
+    
+    if ss1 == ss3 && ss2 == ss4 {
+        let mut res = String::new();
+        res.push_str(&seq[..a]);
+        res.push_str(&seq[c..d + k - 1]);
+        res.push_str(&seq[b + k - 1..c]);
+        res.push_str(&seq[a..b + k - 1]);
+        res.push_str(&seq[d + k - 1..]);
+        
+        assert_eq!(seq.len(), res.len());
+        return Some(res);
+    }
+    None
+}
+
+fn swap_algorithm(seq: &str, k: usize) -> String {
+    assert!(k < seq.len());
+    let was_cyclic: bool = is_k_cyclic(seq, k);
+
+    let mut new_seq = None;
+
+    if (was_cyclic){
+        new_seq = random_rotation(seq, k, kom)e(m)
+    }
+
+    let max_iterations = 5000;
+    for _ in 0..max_iterations {
+        if let Some(res) = markov_transition(seq, k) {
+            new_seq = Some(res);
+            break;
+        }
+    }  
+    
+    if was_cyclic {
+        assert!(is_k_cyclic(&new_seq, k));
+    }
+    
+    let new_seq = new_seq.unwrap_or_else(|| seq.to_string());
+    
+    assert_eq!(seq.len(), new_seq.len(), "Length mismatch between original and transformed sequence");
+    assert!(same_klets(seq, &new_seq, k), "K-let mismatch between original and transformed sequence");
+    
+    new_seq
+}
+
+// fn euler_algorithm(seq: &str, k: usize) -> String {
+//     assert!(k < seq.len());
+//     let mut eord = edge_ordering(seq, k);
+//     let fst = &seq[..k - 1];
+//     let lst = &seq[seq.len() - k + 1..];
+//     let dummy_vertex = format!("X{}", fst);
+//     eord.entry(lst.to_string()).or_default().push(dummy_vertex.clone());
+    
+//     let mut cur_vertex = lst.to_string();
+//     let mut t = vec![cur_vertex.clone()];
+//     let mut seen: HashSet<String> = HashSet::new();
+//     seen.insert(cur_vertex.clone());
+    
+//     while seen.len() < eord.len() {
+//         let cur_edge = eord.get_mut(&cur_vertex).unwrap().remove(0);
+//         cur_vertex = cur_edge[1..].to_string();
+//         seen.insert(cur_vertex.clone());
+//         t.push(cur_vertex.clone());
+//     }
+    
+//     eord.get_mut(lst).unwrap().retain(|v| v != &dummy_vertex);
+//     let mut new_seq = fst.to_string();
+//     let mut cur_vertex = fst.to_string();
+    
+//     loop {
+//         match eord.get_mut(&cur_vertex).and_then(|edges| edges.pop()) {
+//             Some(cur_edge) => {
+//                 cur_vertex = cur_edge[1..].to_string();
+//                 new_seq.push(cur_edge.chars().last().unwrap());
+//             }
+//             None => {
+//                 assert_eq!(cur_vertex, lst, "Last vertex should be equal to lst");
+//                 break;
+//             }
+//         }
+//     }
+    
+//     new_seq
+// }
 
 #[allow(dead_code)]
 fn kandel(seq: &str) -> &str {
